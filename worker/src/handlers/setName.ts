@@ -1,10 +1,12 @@
 import { verifyMessage } from 'ethers/lib/utils'
 import { IRequest } from 'itty-router'
 
+import { fullMap } from '../constants'
 import { Env } from '../env'
 import { ZodNameWithSignature } from '../models'
 import { get } from './functions/get'
 import { set } from './functions/set'
+import { queryDomain } from './functions/utils'
 
 export async function setName(request: IRequest, env: Env): Promise<Response> {
   const body = await request.json()
@@ -17,10 +19,28 @@ export async function setName(request: IRequest, env: Env): Promise<Response> {
 
   const { name, owner, signature } = safeParse.data
 
-  // Only allow 3LDs, no nested subdomains
-  if (name.split('.').length !== 3) {
+  const parts = name.split('.')
+
+  if (
+    name.endsWith('.eth')
+      ? parts.length !== 3
+      : !fullMap.includes(parts.at(-1) || '') || parts.length !== 2
+  ) {
     const response = { success: false, error: 'Invalid name' }
     return Response.json(response, { status: 400 })
+  }
+
+  // verify if dns name has dnssec enabled and set ENS1 prefixed TXT record
+  if (!name.endsWith('.eth')) {
+    const queryResult = await queryDomain(name)
+    let isResultBoolean = typeof queryResult === 'boolean'
+    if (!queryResult || !isResultBoolean) {
+      const response = {
+        success: false,
+        error: isResultBoolean ? 'Invalid name' : queryResult,
+      }
+      return Response.json(response, { status: 400 })
+    }
   }
 
   // Validate signature

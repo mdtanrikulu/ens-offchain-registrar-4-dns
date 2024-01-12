@@ -1,11 +1,11 @@
-name = "ens-gateway"
+name = "offchain-resolver-for-dns-names"
 main = "src/index.ts"
 compatibility_date = "2023-03-15"
 
 [[d1_databases]]
-binding = "DB"
-database_name = "offchaindemo"
-database_id = "6b30bc65-edda-4e25-bb5a-8681b0419031"
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "offchain-resolver-for-dns-db"
+database_id = "64e1a6a6-4bca-44d0-8760-24ed2fc5b874"
 
 # The necessary secrets are:
 # - PRIVATE_KEY

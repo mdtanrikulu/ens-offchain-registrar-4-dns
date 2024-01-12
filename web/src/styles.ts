@@ -13,9 +13,12 @@ export const Form = styled.form`
 `
 
 export const Card = styled(ThorinCard)`
-  width: 100%;
+  width: 120%;
   align-items: center;
   gap: 1.5rem;
+  @media only screen and (max-width: 600px) {
+    width: 100%;
+  }
 `
 
 export const Link = styled.a.attrs({
@@ -31,6 +34,43 @@ export const Link = styled.a.attrs({
     }
   `
 )
+
+export const SetupInfo = styled(ThorinHelper)`
+  width: 120%;
+
+  @media only screen and (max-width: 600px) {
+    width: 100%;
+    font-size: 9pt;
+  }
+`
+
+export const CodeLayout = styled.pre`
+  width: 100%;
+  background-color: #2c203b;
+  padding: 10px;
+  font-size: 10pt;
+  line-height: 18pt;
+  border-radius: 8px;
+  overflow-x: scroll;
+  .key {
+    color: #f000a8;
+  }
+
+  .value {
+    color: #f6f6f6;
+    text-shadow: 0 0 3px #0073e6;
+  }
+
+  @media only screen and (max-width: 600px) {
+    line-height: 1rem;
+    span {
+      display: block;
+    }
+    .key {
+      margin-top: 10px;
+    }
+  }
+`
 
 export const Helper = styled(ThorinHelper)`
   svg {
