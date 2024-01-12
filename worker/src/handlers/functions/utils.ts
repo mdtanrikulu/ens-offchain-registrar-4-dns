@@ -1,5 +1,7 @@
+import { TxtEntry, lookupTxt, query } from 'dns-query'
 import { Insertable, Selectable } from 'kysely'
 
+import { dnsServers } from '../../constants'
 import { Name, NameInKysely } from '../../models'
 
 type SelectableKysely = Selectable<NameInKysely>
@@ -57,5 +59,35 @@ export function stringifyNameForDb(
       contenthash: name.contenthash || null,
       updatedAt: new Date().toISOString(),
     }
+  }
+}
+
+export async function queryDomain(domain: string): Promise<boolean | string> {
+  try {
+    const { answers } = await query(
+      {
+        question: { type: 'RRSIG', name: domain },
+      },
+      {
+        endpoints: dnsServers,
+        retries: 3, // retries if a given endpoint fails; -1 = infinite retries; 0 = no retry
+        timeout: 10000,
+      }
+    )
+    const hasDNSSEC = answers?.some(
+      (answer: any) => answer.data.typeCovered === 'TXT'
+    )
+    const { entries } = await lookupTxt(domain, {
+      endpoints: dnsServers,
+    })
+    const regex = /(ENS1)\s+(0x[a-fA-F0-9]{40})(?:\s.*)?/
+    const hasENS1Record = entries.filter((entry: TxtEntry) =>
+      regex.test(entry.data)
+    )[0]
+
+    return !!hasDNSSEC && !!hasENS1Record
+  } catch (error: any) {
+    console.warn(error)
+    return error.message
   }
 }
