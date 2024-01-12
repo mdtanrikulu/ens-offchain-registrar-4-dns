@@ -28,6 +28,7 @@ These choices allow for a scalable namespace with low cost (store up to 1M names
 
 1. Navigate to this directory: `cd worker`
 2. Login to Cloudflare: `npx wrangler login`
-3. Deploy the Worker: `yarn deploy`
-4. Create the default table in the prod database: `yarn run prod:create-tables`
+2. In the package.json configuration object, update the Cloudflare database name `"db":` to your liking.
+3. Run `yarn prod:create-tables` to create database tables
+4. Deploy the Worker: `yarn deploy`
 5. Set your environment variable: `echo <PRIVATE_KEY> | npx wrangler secret put PRIVATE_KEY` (this is the private key for one of the addresses listed as a signer on your resolver contract)
