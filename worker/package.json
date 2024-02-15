@@ -4,7 +4,7 @@
   "license": "MIT",
   "type": "module",
   "config": {
-    "db": "offchaindemo"
+    "db": "offchain-resolver-for-dns-db"
   },
   "scripts": {
     "dev": "wrangler dev",
@@ -29,6 +29,7 @@
     "itty-router": "^4.0.14",
     "kysely": "^0.26.1",
     "kysely-d1": "^0.3.0",
+    "url": "^0.11.3",
     "zod": "^3.21.4"
   }
 }

@@ -87,7 +87,7 @@ export function makeServer(
   server.add(IResolverService_abi, [
     {
       type: 'resolve',
-      func: async ([encodedName, data]: Result, request) => {
+      func: async ([encodedName, data, verifier]: Result, request) => {
         const name = decodeDnsName(Buffer.from(encodedName.slice(2), 'hex'))
 
         // Query the database
@@ -98,7 +98,7 @@ export function makeServer(
           ['bytes', 'address', 'uint64', 'bytes32', 'bytes32'],
           [
             '0x1900',
-            request?.to,
+            verifier,
             validUntil,
             ethers.utils.keccak256(request?.data || '0x'),
             ethers.utils.keccak256(result),

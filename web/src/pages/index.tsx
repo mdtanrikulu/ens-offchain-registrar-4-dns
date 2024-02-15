@@ -1,23 +1,38 @@
+import { encodeContentHash } from '@ensdomains/ensjs/utils'
 import { Button, Input } from '@ensdomains/thorin'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 // @ts-ignore
-import ch from 'content-hash'
 import Head from 'next/head'
-import { useState } from 'react'
+import { MutableRefObject, useEffect, useRef, useState } from 'react'
 import { useAccount, useSignMessage } from 'wagmi'
 
 import { Footer } from '@/components/Footer'
+import { fullMap } from '@/constants'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useFetch } from '@/hooks/useFetch'
 import { Card, Form, Helper, Link, SetupInfo, Spacer } from '@/styles'
 import { WorkerRequest } from '@/types'
 
+function validateInput(ref: MutableRefObject<null>, conditionMet: boolean) {
+  if (conditionMet) {
+    ;(ref.current as any).style.border = ''
+  } else {
+    ;(ref.current as any).style.border = '2px solid red'
+    ;(ref.current as any).style.borderRadius = '8px'
+  }
+}
+
 export default function App() {
   const { address } = useAccount()
+
+  const nameRef = useRef(null)
+  const contentHashRef = useRef(null)
 
   const [name, setName] = useState<string | undefined>(undefined)
   const [description, setDescription] = useState<string | undefined>(undefined)
   const [contentHash, setContentHash] = useState<string | undefined>(undefined)
+  const [isNameValid, setNameValid] = useState<boolean>(true)
+  const [isContentHashValid, setContentHashValid] = useState<boolean>(true)
 
   const regex = new RegExp('^[a-z0-9-.]+$')
   const debouncedName = useDebounce(name, 500)
@@ -26,13 +41,50 @@ export default function App() {
 
   const { data, isLoading, signMessage, variables } = useSignMessage()
 
+  let contentHashEncoded = ''
+
+  useEffect(() => {
+    validateInput(contentHashRef, isContentHashValid)
+    if (!isContentHashValid) contentHashEncoded = ''
+  }, [isContentHashValid])
+
+  useEffect(() => {
+    validateInput(nameRef, isNameValid)
+  }, [isNameValid])
+
+  useEffect(() => {
+    if (debouncedContentHash) {
+      try {
+        contentHashEncoded = encodeContentHash(debouncedContentHash)
+        setContentHashValid(true)
+      } catch (error) {
+        console.log('error', error)
+        setContentHashValid(false)
+      }
+    } else {
+      setContentHashValid(true)
+    }
+  }, [debouncedContentHash])
+
+  useEffect(() => {
+    if (debouncedName) {
+      const parts = debouncedName?.split('.')
+      setNameValid(
+        debouncedName.endsWith('.eth')
+          ? parts.length === 3
+          : fullMap.includes(parts.at(-1) || '') && parts.length === 2
+      )
+    } else {
+      setNameValid(true)
+    }
+  }, [debouncedName])
+
   const requestBody: WorkerRequest = {
     name: `${debouncedName}`,
     owner: address!,
     addresses: { '60': address },
     texts: { description },
-    contenthash:
-      debouncedContentHash && `0x${ch.fromIpfs(debouncedContentHash)}`,
+    contenthash: contentHashEncoded,
     signature: {
       hash: data!,
       message: variables?.message!,
@@ -103,6 +155,7 @@ export default function App() {
           }}
         >
           <Input
+            ref={nameRef}
             type="text"
             label="Name"
             placeholder="ens.xyz"
@@ -120,6 +173,7 @@ export default function App() {
           />
 
           <Input
+            ref={contentHashRef}
             type="text"
             label="Content hash"
             placeholder=""
@@ -129,7 +183,7 @@ export default function App() {
 
           <Button
             type="submit"
-            disabled={!enabled || !!data}
+            disabled={!enabled || !!data || !isNameValid || !isContentHashValid}
             loading={isLoading || gatewayIsLoading}
           >
             Save Records

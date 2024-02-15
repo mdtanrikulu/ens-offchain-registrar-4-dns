@@ -11,9 +11,9 @@
     "prettier:fix": "prettier --write src/**/*"
   },
   "dependencies": {
+    "@ensdomains/ensjs": "^3.0.0",
     "@ensdomains/thorin": "^0.6.39",
     "@rainbow-me/rainbowkit": "^1.0.4",
-    "content-hash": "^2.5.2",
     "ethers": "^6.9.2",
     "next": "13.4.1",
     "react": "^18.2.0",

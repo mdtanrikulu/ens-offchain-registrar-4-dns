@@ -129,7 +129,6 @@ export default function App() {
             </div>
           </CodeLayout>
         ) : null}
-        {JSON.stringify(result)}
         {queryError || (Object.keys(result).length > 1 && !result.address) ? (
           <Helper type="error">
             {queryError?.message === 'Conflict'
